@@ -1,4 +1,4 @@
-## Prompt-based distractor gen project
+## Prompt-based Math MCQ Distractor Generation
 
 ## Installation
 
@@ -8,18 +8,15 @@
 ### Pip
 `pip install -r requirements.txt`
 
-### Directories
-```
-mkdir data
-mkdir analysis
-mkdir cache
-```
-
 ## Run
 
 ### Generate Distractors
 ```
-python run.py 'command.task=fetch_from_openai' 'data.trainFilepath=analysis/<output_file>.csv' 'openAI.model=gpt-3.5-turbo-1106'
+python run.py 'command.task=fetch_from_openai' 'data.trainFilepath=data/<output_file>.csv' 'openAI.model=gpt-3.5-turbo-1106'
+```
+### Evaluating Distractors
+```
+python evaluation.py
 ```
 
 ## Acknowledgement
