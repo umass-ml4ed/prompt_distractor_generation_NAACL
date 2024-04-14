@@ -1,4 +1,4 @@
-## Prompt-based distractor gen project
+## Prompt-based Math MCQ Distractor Generation
 
 ## Installation
 
@@ -7,13 +7,6 @@
 
 ### Pip
 `pip install -r requirements.txt`
-
-### Directories
-```
-mkdir data
-mkdir analysis
-mkdir cache
-```
 
 ## Run
 
