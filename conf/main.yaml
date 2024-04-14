@@ -1,0 +1,28 @@
+command:
+  task: "open_ai_fetch"
+data:
+  trainFilepath: "./data/eedi_train_80_cleaned_4_18.csv"  # eedi_train_80_cleaned_4_18.csv
+  testFilepath: "./data/eedi_test_20_cleaned_4_18.csv" # eedi_test_20_cleaned_4_18_misconceptions.csv for RB
+development:
+  truncate: ~ # If set will only take top n rows, if set to ~ will run everything ~ means all
+prompt:
+  type: "distractor_only" # distractor_only, distractor_and_answer, distractor_and_answer_with_feedback, zero_shot, rule_based_random, rule_based_selection
+openAI:
+  model: "gpt-3.5-turbo-1106" # "text-davinci-003" #aka gpt3, "code-davinci-002"  #aka codex, "gpt-3.5-turbo" #aka chatGPT "gpt-3.5-turbo-1106" #aka chatGPT "gpt-4-1106-preview" # gpt4
+  temperature: 0
+  max_tokens: 350
+  top_p: 1
+  frequency_penalty: 0.0
+  presence_penalty: 0.0
+  stop: ["[stop]"]
+  logprobs: null
+  echo: False
+retriever:
+  exclude_construct_level: ~ # ~, 1, 2, 3
+  type: "KNN" # KNN, none, random, misconception_random misconception_selection
+  k: 3
+  encoderModel: "sentence-transformers/all-mpnet-base-v2"
+  encodingPattern: "q" # q, q+a, q+a+f
+  batch_size: 256 # For the encoder forward pass
+dir_finetune_result:
+  model_name: "" #"mistral_finetune" "gpt_finetune" "SB_sampling"
