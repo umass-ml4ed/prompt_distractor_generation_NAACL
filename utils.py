@@ -2,6 +2,9 @@ import csv
 import re
 import pandas as pd
 import ast
+import numpy as np
+import torch
+import random
 
 
 def str_to_dict_eedi_df(df: pd.DataFrame):
@@ -15,6 +18,16 @@ def str_to_dict_eedi_df(df: pd.DataFrame):
                 df.at[i, col] = None
     return df
 
+def initialize_seeds(seed_num: int):
+    random.seed(seed_num)
+    np.random.seed(seed_num)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    torch.manual_seed(seed_num)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed_num)
+        torch.cuda.manual_seed_all(seed_num)
+        
 def clean_string(string):
     string = string.lower()
     string = string.replace("$", "")
