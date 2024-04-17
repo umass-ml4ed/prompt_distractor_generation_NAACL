@@ -1,4 +1,8 @@
-## Prompt-based Math MCQ Distractor Generation
+# [Exploring Automated Distractor Generation for Math Multiple-choice Questions via Large Language Models](https://arxiv.org/abs/2404.02124)
+
+In this repository, we present the code to our paper "Exploring Automated Distractor Generation for Math Multiple-choice Questions via Large Language Models" by Wanyong Feng, Jaewook Lee, Hunter McNichols, Alexander Scarlatos, Digory Smith, Simon Woodhead, Nancy Otero Ornelas, and Andrew Lan. We explore a variety of approaches to this task, including in-context learning(kNN), fine-tuning(FT), and chain-of-thought prompting(CoT), together with rule(RB)- and sampling-based(SB) baselines.
+
+For any questions please [email](mailto:wanyongfeng@umass.edu) or raise an issue.
 
 ## Installation
 
