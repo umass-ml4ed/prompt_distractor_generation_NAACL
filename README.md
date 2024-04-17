@@ -27,12 +27,12 @@ python run.py 'command.task=fetch_from_openai' 'data.trainFilepath=data/<output_
 python misconception_selection.py
 python run.py 'command.task=fetch_from_openai' 'data.trainFilepath=data/<output_file>.csv' 'data.testFilepath=data/<output_file>.csv' 'openAI.model=gpt-4-1106-preview' 'prompt.type=rule_based_selection' 'retriever.type=misconception_selection' 'retriever.encodingPattern=q+a+f'
 ```
-### Generate Distractors with FT approach (GPT3.5 in openai_finetune folder)
+### Generate Distractors with FT approach (GPT3.5, in openai_finetune folder)
 ```
 python openai_finetune.py
 python run.py 'command.task=fetch_from_openai' 'data.trainFilepath=data/<output_file>.csv' 'data.testFilepath=data/<output_file>.csv' 'openAI.model=gpt-4-1106-preview' 'prompt.type=zero_shot' 'retriever.type=none' 'retriever.encodingPattern=q+a+f' 'dir_finetune_result.model_name=gpt_finetune'
 ```
-### Generate Distractors with FT approach (Mistral in mistral_finetune folder)
+### Generate Distractors with FT approach (Mistral, in mistral_finetune folder)
 ```
 python train.py
 python test.py
