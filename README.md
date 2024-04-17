@@ -23,5 +23,15 @@ python run.py 'command.task=fetch_from_openai' 'data.trainFilepath=data/<output_
 python evaluation.py
 ```
 
-## Acknowledgement
-we use GitHub Copilot to help us write some data-processing and utility functions  
+## Citation
+If you used our code or found this work useful in any way, please cite us!
+```
+@misc{feng2024exploring,
+      title={Exploring Automated Distractor Generation for Math Multiple-choice Questions via Large Language Models}, 
+      author={Wanyong Feng and Jaewook Lee and Hunter McNichols and Alexander Scarlatos and Digory Smith and Simon Woodhead and Nancy Otero Ornelas and Andrew Lan},
+      year={2024},
+      eprint={2404.02124},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL}
+}
+```  
