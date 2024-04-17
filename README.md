@@ -42,6 +42,7 @@ python run.py 'command.task=fetch_from_openai' 'data.trainFilepath=data/<output_
 ```
 python openai_finetune.py
 python run.py 'command.task=fetch_from_openai' 'data.trainFilepath=data/<output_file>.csv' 'data.testFilepath=data/<output_file>.csv' 'openAI.model=gpt-4-1106-preview' 'prompt.type=zero_shot' 'retriever.type=none' 'retriever.encodingPattern=q+a+f' 'dir_finetune_result.model_name=SB_sampling'
+```
 ### Evaluating Distractors
 ```
 python evaluation.py
