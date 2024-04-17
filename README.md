@@ -14,9 +14,20 @@ For any questions please [email](mailto:wanyongfeng@umass.edu) or raise an issue
 
 ## Run
 
-### Generate Distractors using kNN
+### Generate Distractors with kNN approach
 ```
 python run.py 'command.task=fetch_from_openai' 'data.trainFilepath=data/<output_file>.csv' 'data.testFilepath=data/<output_file>.csv' 'openAI.model=gpt-3.5-turbo-1106' 'prompt.type=distractor_and_answer_with_feedback' 'retriever.type=KNN' 'retriever.encodingPattern=q+a+f'
+```
+### Generate Distractors with CoT approach
+```
+python run.py 'command.task=fetch_from_openai' 'data.trainFilepath=data/<output_file>.csv' 'data.testFilepath=data/<output_file>.csv' 'openAI.model=gpt-4-1106-preview' 'prompt.type=zero_shot' 'retriever.type=none' 'retriever.encodingPattern=q+a+f'
+```
+### Generate Distractors with RB approach
+```
+python misconception_selection.py
+```
+```
+python run.py 'command.task=fetch_from_openai' 'data.trainFilepath=data/<output_file>.csv' 'data.testFilepath=data/<output_file>.csv' 'openAI.model=gpt-4-1106-preview' 'prompt.type=rule_based_selection' 'retriever.type=misconception_selection' 'retriever.encodingPattern=q+a+f'
 ```
 ### Evaluating Distractors
 ```
