@@ -1,9 +1,10 @@
 import json
 import numpy as np
+
 seed_val = 50
 np.random.seed(seed_val)
 
-with open('test_responses_sampling.json') as f:
+with open('SB_samplingpre_proc.json') as f:
     data = json.load(f)
 
 with open("data/test_cor_answers.json") as f:
@@ -55,14 +56,6 @@ for final_data in final_datas:
     for idx, val in enumerate(final_data):
         result += f"Distractor{idx+1}: {val}\n"
     results.append(result)
-    
-with open("gpt_responses/test_responses_N.json", "w") as outfile:
+
+with open("SB_sampling.json", "w") as outfile:
     json.dump(results, outfile, ensure_ascii=False, indent = 2)
-    
-
-
-
-
-
-
-
