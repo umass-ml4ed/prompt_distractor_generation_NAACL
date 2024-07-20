@@ -26,9 +26,9 @@ for idx, vals in enumerate(data):
     for val in vals:
         if "Answer:" in val:
             val = val.split("Answer:")[1]
-        if clean_string(val) == cor:
-            continue
-        distractors.add(val)
+        val = clean_string(val)
+        if val != cor:
+            distractors.add(val)
     # Keep necessary number of distractors and format to expected output
     distractors = list(distractors)[:args.num_distractors]
     result = ""

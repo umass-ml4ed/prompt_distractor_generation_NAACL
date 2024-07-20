@@ -6,11 +6,11 @@ For any questions please [email](mailto:wanyongfeng@umass.edu) or raise an issue
 
 ## Installation
 
-### Conda (reccomended)
-`conda env create --file enviornment.yml`
-
 ### Pip
 `pip install -r requirements.txt`
+
+### Conda
+`conda env create --file enviornment.yml`
 
 ## Run
 
