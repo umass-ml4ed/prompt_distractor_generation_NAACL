@@ -8,14 +8,15 @@ def process_data(data_address):
     data = []
     for _, row in data_file.iterrows():
         temp = {}
-        input  = '[INST] ' + "You are given the following math question along with the correct answer and explanation. Please use the following template to give three alternative incorrect answers to be used as multiple-choice options in a multiple-choice exam. Prior to the incorrect answer, provide feedback to be displayed to the student as an explanation of why that is not the correct answer.\n \
-        [Template]\n \
-        Distractor1 Feedback: \
-        Distractor1: \
-        Distractor2 Feedback: \
-        Distractor2: \
-        Distractor3 Feedback: \
-        Distractor3:\n" +  "Question: " + row["question"].strip() + "\nExplanation: " + row["correct_option"]["explanation"].strip() + " \nAnswer: " + row["correct_option"]["option"].strip() + " [/INST]" 
+        input  = "[INST] You are given the following math question along with the correct answer and explanation. Please use the following template to give three alternative incorrect answers to be used as multiple-choice options in a multiple-choice exam. Prior to the incorrect answer, provide feedback to be displayed to the student as an explanation of why that is not the correct answer.\n" +\
+        "[Template]\n" +\
+        "Distractor1 Feedback:\n" +\
+        "Distractor1:\n" +\
+        "Distractor2 Feedback:\n" +\
+        "Distractor2:\n" +\
+        "Distractor3 Feedback:\n" +\
+        "Distractor3:\n" +\
+        "Question: " + row["question"].strip() + "\nExplanation: " + row["correct_option"]["explanation"].strip() + " \nAnswer: " + row["correct_option"]["option"].strip() + " [/INST]"
         temp["input"] = input
         output = "\nDistractor1 Feedback: " + row["distractors"][0]["explanation"].strip() + "\nDistractor1: " + row["distractors"][0]["option"].strip() 
         output += "\nDistractor2 Feedback: " + row["distractors"][1]["explanation"].strip() + "\nDistractor2: " + row["distractors"][1]["option"].strip()
@@ -31,7 +32,7 @@ valid_data = temp_data[int(len(temp_data)*0.8):]
 
 with open('data/train.json', 'w') as outfile:
     json.dump(train_data, outfile, indent=4)
-        
+
 with open('data/valid.json', 'w') as outfile:
     json.dump(valid_data, outfile, indent=4)
 

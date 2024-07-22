@@ -7,10 +7,12 @@ development:
   truncate: ~ # If set will only take top n rows, if set to ~ will run everything ~ means all
 prompt:
   type: "distractor_only" # distractor_only, distractor_and_answer, distractor_and_answer_with_feedback, zero_shot, rule_based_random, rule_based_selection
+  num_distractors: 3
 openAI:
+  use_azure: false
   model: "gpt-3.5-turbo-1106" # "text-davinci-003" #aka gpt3, "code-davinci-002"  #aka codex, "gpt-3.5-turbo" #aka chatGPT "gpt-3.5-turbo-1106" #aka chatGPT "gpt-4-1106-preview" # gpt4
   temperature: 0
-  max_tokens: 350
+  max_tokens: 1000
   top_p: 1
   frequency_penalty: 0.0
   presence_penalty: 0.0
@@ -25,4 +27,4 @@ retriever:
   encodingPattern: "q" # q, q+a, q+a+f
   batch_size: 256 # For the encoder forward pass
 dir_finetune_result:
-  model_name: "" #"mistral_finetune" "gpt_finetune" "SB_sampling"
+  model_name: "" #"mistral_finetune" "mistral_SB" "gpt_finetune" "SB_sampling"

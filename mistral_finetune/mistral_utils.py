@@ -1,35 +1,8 @@
-import ast
-from torch.utils.data import TensorDataset, DataLoader
-from transformers import AdamW
+from torch.utils.data import DataLoader
 import torch
-import numpy as np
 import json
-import re
-import pandas as pd
-import random
 from dataset import mistral_Dataset
 
-def str_to_dict_eedi_df(df: pd.DataFrame):
-    cols = ["correct_option", "gt_distractors", "generated_distractors", "log_probs", "distractors"]
-    cols = [col for col in cols if col in df.columns]
-    for i, row in df.iterrows():
-        for col in cols:
-            try:
-                df.at[i, col] = ast.literal_eval(row[col])
-            except Exception:
-                df.at[i, col] = None
-    return df
-
-def initialize_seeds(seed_num: int):
-    random.seed(seed_num)
-    np.random.seed(seed_num)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
-    torch.manual_seed(seed_num)
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed(seed_num)
-        torch.cuda.manual_seed_all(seed_num)
-        
 def get_data(data_address):
     with open(data_address) as f:
         data = json.load(f)
@@ -76,5 +49,3 @@ class BytesEncoder(json.JSONEncoder):
         if isinstance(obj, bytes):
             return obj.decode('utf-8')
         return json.JSONEncoder.default(self, obj)
-
-
