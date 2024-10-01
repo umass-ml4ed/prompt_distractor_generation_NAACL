@@ -15,21 +15,25 @@ def main():
     gt_distractors = []
     generated_distractors = []
     proportions = []
-    distractor_pattern = re.compile(r"(?i)distractor ?(?:\d+): (.+)")
+    distractor_nl_pattern = re.compile(r"(?i)(distractor ?(?:\d+):\**)\n")
+    distractor_pattern = re.compile(r"(?i)\**distractor ?(?:\d+):\** (.+)")
 
     data = pd.read_csv(args.filename)
     data = str_to_dict_eedi_df(data)
     for idx, row in data.iterrows():
         distractors_per_question = []
         response = str(row['raw_response'])
+        response = distractor_nl_pattern.sub(r"\g<1> ", response)
         lines = response.split('\n')
         for line in lines:
             line = line.strip()
             if distractor_pattern.match(line):
                 distractor = distractor_pattern.match(line).group(1)
                 distractors_per_question.append(clean_string(distractor))
-            if distractors_per_question == args.num_distractors:
+            if len(distractors_per_question) == args.num_distractors:
                 break # Terminate early in case extra distractors generated
+        if len(distractors_per_question) < args.num_distractors:
+            print("Distractors missing!")
         generated_distractors.append(distractors_per_question)
 
     gt_data = pd.read_csv("data/eedi_test_20_cleaned_4_18.csv")

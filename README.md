@@ -57,7 +57,7 @@ python run.py 'dir_finetune_result.model_name=mistral_SB' 'prompt.type=zero_shot
 ```
 ### Evaluating Distractors
 ```
-python evaluation.py <result_filename> <num_distractors>
+python evaluation.py analysis/<result_filename> <num_distractors>
 ```
 
 ## Citation

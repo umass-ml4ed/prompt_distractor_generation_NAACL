@@ -33,8 +33,10 @@ class OpenAIInterface:
     @staticmethod
     def get_client(openaicfg):
         if not openaicfg.use_azure:
+            openai.api_type = "openai"
             return openai
         if OpenAIInterface.azure_client is None:
+            openai.api_type = "azure"
             OpenAIInterface.azure_client = AzureOpenAI(
                 api_key=os.getenv("AZURE_OPENAI_API_KEY"),
                 api_version="2024-02-01",
@@ -119,6 +121,10 @@ class OpenAIInterface:
         try:
             assert len(prompt) == 1, "Chat only supports one prompt"
             client = OpenAIInterface.get_client(openaicfg)
+            if openaicfg.model.startswith("o1"):
+                params = {"timeout": 120}
+            else:
+                params = {"max_tokens": openaicfg.max_tokens, "temperature": openaicfg.temperature, "timeout": 45}
             response = client.chat.completions.create(
                 model=openaicfg.model,
                 messages=[
@@ -127,12 +133,10 @@ class OpenAIInterface:
                         "content": prompt[0]
                     }
                 ],
-                temperature=openaicfg.temperature,
-                max_tokens=openaicfg.max_tokens,
+                **params,
                 top_p=openaicfg.top_p,
                 frequency_penalty=openaicfg.frequency_penalty,
-                presence_penalty=openaicfg.presence_penalty,
-                timeout=45
+                presence_penalty=openaicfg.presence_penalty
             )
             if dynamic_retry:
                 OpenAIInterface.delay_time = max(OpenAIInterface.delay_time * OpenAIInterface.decay_rate, 0.1)
