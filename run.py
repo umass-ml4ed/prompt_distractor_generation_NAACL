@@ -10,10 +10,10 @@ from tqdm import tqdm
 import atexit
 import json
 
-def evalautePrompts(df_pool, df_train, cfg):
+def evalautePrompts(df_pool, df_test, cfg):
     ## This function is the crux of the experiment
     retriver = rf.getRetriever(cfg.retriever.type, cfg.retriever)
-    
+
     # TODO there's probably a sleeker way to batch this
     results = []
     prompts = []
@@ -21,40 +21,37 @@ def evalautePrompts(df_pool, df_train, cfg):
     print("Generating prompts...")
     gen_tic = time.time()
     if cfg.development.truncate:
-        df_train = df_train.iloc[0:cfg.development.truncate]
-    for i, sample in tqdm(df_train.iterrows(), total=len(df_train)):
+        df_test = df_test.iloc[0:cfg.development.truncate]
+    for i, sample in tqdm(df_test.iterrows(), total=len(df_test)):
         in_context_examples = retriver.fetch_examples(sample, df_pool)
         all_in_context_examples.append(in_context_examples)
         # print("in_context_examples", in_context_examples)
-        prompt = pf.producePrompt(sample, cfg.prompt.type, examples=in_context_examples)
+        prompt = pf.producePrompt(sample, cfg.prompt.type, cfg.prompt.num_distractors, examples=in_context_examples)
         # print("prompt", prompt)
         prompts.append(prompt)
     gen_toc = time.time()
     print("Generated", len(prompts), "prompts in", gen_toc - gen_tic, "seconds.")
     # NOTE: this currently blocks the main thread, it would be more efficient to encode in batches
     # And then send the batches to the API
-        
-    if cfg.dir_finetune_result.model_name == "mistral_finetune" or cfg.dir_finetune_result.model_name == "gpt_finetune" or cfg.dir_finetune_result.model_name == "SB_sampling":
+
+    if cfg.dir_finetune_result.model_name in ("mistral_finetune", "gpt_finetune", "SB_sampling", "mistral_SB"):
         print("Loading predictions from fine-tuned model...")
         with open(str(cfg.dir_finetune_result.model_name) + ".json", "r") as f:
             prompt_responses = json.load(f)
     else:
         print("Calling OpenAI API...")
         prompt_tic = time.time()
-        if cfg.openAI.model in oAI.CHAT_GPT_MODEL_NAME:
-            prompt_responses = oAI.getCompletionForAllPrompts(cfg.openAI, prompts, batch_size=20, use_parallel=True)
-        else:
-            prompt_responses = oAI.getCompletionForAllPrompts(cfg.openAI, prompts, batch_size=10, use_parallel=False)
+        prompt_responses = oAI.getCompletionForAllPrompts(cfg.openAI, prompts, batch_size=20, use_parallel=True)
         prompt_toc = time.time()
         print("Called OpenAI API in", prompt_toc - prompt_tic, "seconds.")
-        
+
     print("Processing responses...")
     process_tic = time.time()
     for prompt, response in zip(prompts, prompt_responses):
-        if cfg.dir_finetune_result.model_name == "llama_finetune" or cfg.dir_finetune_result.model_name == "gpt_finetune" or cfg.dir_finetune_result.model_name == "gpt_sampling":
+        if cfg.dir_finetune_result.model_name in ("mistral_finetune", "gpt_finetune", "SB_sampling", "mistral_SB"):
             pred = response
         else:
-            pred = response["text"] if "davinci" in cfg.openAI.model else response["message"]["content"]
+            pred = response["text"] if "davinci" in cfg.openAI.model else response
         result = {"prompt": prompt, "raw_response": pred}
         results.append(result)
 
@@ -63,8 +60,6 @@ def evalautePrompts(df_pool, df_train, cfg):
     save_result(results_df, cfg)
     process_toc = time.time()
     print("Processed", len(results), "responses in", process_toc - process_tic, "seconds.")
-    
-    
 
 @hydra.main(version_base=None, config_path="conf", config_name="main")
 def main(cfg: DictConfig):
@@ -78,6 +73,7 @@ def main(cfg: DictConfig):
         df_test = pd.read_csv(cfg.data.testFilepath)
         df_pool = str_to_dict_eedi_df(df_pool)
         df_test = str_to_dict_eedi_df(df_test)
+        df_pool = df_pool[df_pool["correct_option"].notna()]
         evalautePrompts(df_pool, df_test, cfg)
     else:
         print("Unrecognized task:", cfg.command.task)

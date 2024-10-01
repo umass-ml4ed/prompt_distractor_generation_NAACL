@@ -1,10 +1,9 @@
 import openai
-from openai.error import RateLimitError, Timeout, APIError, ServiceUnavailableError, APIConnectionError
+from openai import AzureOpenAI, RateLimitError, APITimeoutError, APIError, APIConnectionError
 import os
 import json
 import time
 from tqdm import tqdm
-from omegaconf import OmegaConf
 import concurrent.futures
 
 api_keys = os.getenv("OPENAI_API_KEYS").split(",") if "OPENAI_API_KEYS" in os.environ else [os.getenv("OPENAI_API_KEY")] 
@@ -20,21 +19,34 @@ class OpenAIInterface:
     delay_time = 0.5
     decay_rate = 0.8
     cache = {} # Maps cache filename to prompt to result
+    azure_client = None
 
     # Max number of prompts per request
     API_MAX_BATCH = 20
     # Codex max rate limit is 40k tokens per minute
     # https://platform.openai.com/docs/guides/rate-limits/error-mitigation
     MAX_TPM = float(40000)
-    # CHAT_GPT_MODEL_NAME = "gpt-3.5-turbo"
-    CHAT_GPT_MODEL_NAME = ["gpt-3.5-turbo", "gpt-3.5-turbo-1106", "gpt-4",  "gpt-4-1106-preview"]
 
     def __init__(self, openaicfg):
         self.openaicfg = openaicfg
 
     @staticmethod
+    def get_client(openaicfg):
+        if not openaicfg.use_azure:
+            openai.api_type = "openai"
+            return openai
+        if OpenAIInterface.azure_client is None:
+            openai.api_type = "azure"
+            OpenAIInterface.azure_client = AzureOpenAI(
+                api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+                api_version="2024-02-01",
+                azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+            )
+        return OpenAIInterface.azure_client
+
+    @staticmethod
     def get_cache(openaicfg):
-        cache_filename = f"oai_cache_{openaicfg.model}.json"
+        cache_filename = f"oai_cache_{openaicfg.model}_tok{openaicfg.max_tokens}.json"
         if cache_filename not in OpenAIInterface.cache:
             OpenAIInterface.cache[cache_filename] = get_saved_cache(cache_filename)
         return OpenAIInterface.cache[cache_filename]
@@ -90,7 +102,7 @@ class OpenAIInterface:
                 concurrent.futures.wait(futures, return_when=concurrent.futures.ALL_COMPLETED)
 
                 # Accumulate results
-                results = [future.result().choices[0] for future in futures]
+                results = [future.result() for future in futures]
                 return results
         except Exception as e:
             print(e)
@@ -103,46 +115,33 @@ class OpenAIInterface:
             time.sleep(OpenAIInterface.delay_time)
 
         # TODO handle multiple api keys
-        openai.api_key = api_keys[0]
+        if not OpenAIInterface.azure_client:
+            openai.api_key = api_keys[0]
+
         try:
-            if openaicfg.stop is None:
-                stops = None
+            assert len(prompt) == 1, "Chat only supports one prompt"
+            client = OpenAIInterface.get_client(openaicfg)
+            if openaicfg.model.startswith("o1"):
+                params = {"timeout": 120}
             else:
-                stops = OmegaConf.to_container(openaicfg.stop) # Adapting the OmegaConf list to a python list
-            if openaicfg.model in OpenAIInterface.CHAT_GPT_MODEL_NAME:
-                assert len(prompt) == 1, "Chat only supports one prompt"
-                response = openai.ChatCompletion.create(
-                    model=openaicfg.model,
-                    messages=[
-                        {
-                            "role": "user",
-                            "content": prompt[0]
-                        }
-                    ],
-                    temperature=openaicfg.temperature,
-                    max_tokens=openaicfg.max_tokens,
-                    top_p=openaicfg.top_p,
-                    frequency_penalty=openaicfg.frequency_penalty,
-                    presence_penalty=openaicfg.presence_penalty,
-                    request_timeout=45
-                )
-            else:
-                response = openai.Completion.create(
-                    model=openaicfg.model,
-                    prompt=prompt,
-                    temperature=openaicfg.temperature,
-                    max_tokens=openaicfg.max_tokens,
-                    top_p=openaicfg.top_p,
-                    frequency_penalty=openaicfg.frequency_penalty,
-                    presence_penalty=openaicfg.presence_penalty,
-                    stop=stops,
-                    logprobs=openaicfg.logprobs,
-                    echo=openaicfg.echo
-                )
+                params = {"max_tokens": openaicfg.max_tokens, "temperature": openaicfg.temperature, "timeout": 45}
+            response = client.chat.completions.create(
+                model=openaicfg.model,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": prompt[0]
+                    }
+                ],
+                **params,
+                top_p=openaicfg.top_p,
+                frequency_penalty=openaicfg.frequency_penalty,
+                presence_penalty=openaicfg.presence_penalty
+            )
             if dynamic_retry:
                 OpenAIInterface.delay_time = max(OpenAIInterface.delay_time * OpenAIInterface.decay_rate, 0.1)
-            return response
-        except (RateLimitError, Timeout, APIError, ServiceUnavailableError, APIConnectionError) as exc:
+            return response.choices[0].message.content
+        except (RateLimitError, APITimeoutError, APIError, APIConnectionError) as exc:
             print(openai.api_key, exc)
             if dynamic_retry:
                 OpenAIInterface.delay_time = min(OpenAIInterface.delay_time * 2, 30)

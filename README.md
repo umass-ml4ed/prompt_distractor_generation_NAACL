@@ -6,46 +6,58 @@ For any questions please [email](mailto:wanyongfeng@umass.edu) or raise an issue
 
 ## Installation
 
-### Conda (reccomended)
-`conda env create --file enviornment.yml`
-
 ### Pip
 `pip install -r requirements.txt`
+
+### Conda
+`conda env create --file enviornment.yml`
 
 ## Run
 
 ### Generate Distractors with kNN approach
 ```
-python run.py 'command.task=fetch_from_openai' 'data.trainFilepath=data/<output_file>.csv' 'data.testFilepath=data/<output_file>.csv' 'openAI.model=gpt-3.5-turbo-1106' 'prompt.type=distractor_and_answer_with_feedback' 'retriever.type=KNN' 'retriever.encodingPattern=q+a+f'
+python run.py 'openAI.model=gpt-3.5-turbo-1106' 'prompt.type=distractor_and_answer_with_feedback' 'retriever.type=KNN' 'retriever.encodingPattern=q+a+f'
 ```
 ### Generate Distractors with CoT approach
 ```
-python run.py 'command.task=fetch_from_openai' 'data.trainFilepath=data/<output_file>.csv' 'data.testFilepath=data/<output_file>.csv' 'openAI.model=gpt-4-1106-preview' 'prompt.type=zero_shot' 'retriever.type=none' 'retriever.encodingPattern=q+a+f'
+python run.py 'openAI.model=gpt-4-1106-preview' 'prompt.type=zero_shot' 'retriever.type=none'
 ```
 ### Generate Distractors with RB approach
 ```
 python misconception_selection.py
-python run.py 'command.task=fetch_from_openai' 'data.trainFilepath=data/<output_file>.csv' 'data.testFilepath=data/<output_file>.csv' 'openAI.model=gpt-4-1106-preview' 'prompt.type=rule_based_selection' 'retriever.type=misconception_selection' 'retriever.encodingPattern=q+a+f'
+python run.py 'openAI.model=gpt-4-1106-preview' 'prompt.type=rule_based_selection' 'retriever.type=misconception_selection' 'retriever.encodingPattern=q+a+f' 'data.testFilepath=data/eedi_test_20_cleaned_4_18_misconceptions.csv'
 ```
-### Generate Distractors with FT approach (GPT3.5, in openai_finetune folder)
+### Generate Distractors with FT approach (GPT3.5)
 ```
-python openai_finetune.py
-python run.py 'command.task=fetch_from_openai' 'data.trainFilepath=data/<output_file>.csv' 'data.testFilepath=data/<output_file>.csv' 'openAI.model=gpt-4-1106-preview' 'prompt.type=zero_shot' 'retriever.type=none' 'retriever.encodingPattern=q+a+f' 'dir_finetune_result.model_name=gpt_finetune'
+python openai_finetune/data_processing.py
+python openai_finetune/openai_finetune.py
+python run.py 'dir_finetune_result.model_name=gpt_finetune' 'prompt.type=zero_shot' 'retriever.type=none'
 ```
-### Generate Distractors with FT approach (Mistral, in mistral_finetune folder)
+### Generate Distractors with FT approach (Mistral)
 ```
-python train.py
-python test.py
-python run.py 'command.task=fetch_from_openai' 'data.trainFilepath=data/<output_file>.csv' 'data.testFilepath=data/<output_file>.csv' 'openAI.model=gpt-4-1106-preview' 'prompt.type=zero_shot' 'retriever.type=none' 'retriever.encodingPattern=q+a+f' 'dir_finetune_result.model_name=mistral_finetune'
+python mistral_finetune/data_processing.py
+python mistral_finetune/train.py
+python mistral_finetune/test.py --model_checkpoint <model_checkpoint_folder_path>
+python run.py 'dir_finetune_result.model_name=mistral_finetune' 'prompt.type=zero_shot' 'retriever.type=none'
 ```
-### Generate Distractors with SB approach
+### Generate Distractors with SB approach (GPT3.5)
 ```
-python openai_finetune.py
-python run.py 'command.task=fetch_from_openai' 'data.trainFilepath=data/<output_file>.csv' 'data.testFilepath=data/<output_file>.csv' 'openAI.model=gpt-4-1106-preview' 'prompt.type=zero_shot' 'retriever.type=none' 'retriever.encodingPattern=q+a+f' 'dir_finetune_result.model_name=SB_sampling'
+python openai_finetune/sb_data_processing.py
+python openai_finetune/openai_finetune.py --sb
+python openai_finetune/post_sb_processing.py
+python run.py 'dir_finetune_result.model_name=SB_sampling' 'prompt.type=zero_shot' 'retriever.type=none'
+```
+### Generate Distractors with SB approach (Mistral)
+```
+python mistral_finetune/sb_data_processing.py
+python mistral_finetune/train.py --sb
+python mistral_finetune/test.py --sb --model_checkpoint <model_checkpoint_folder_path>
+python mistral_finetune/post_sb_processing.py <num_distractors>
+python run.py 'dir_finetune_result.model_name=mistral_SB' 'prompt.type=zero_shot' 'retriever.type=none'
 ```
 ### Evaluating Distractors
 ```
-python evaluation.py
+python evaluation.py analysis/<result_filename> <num_distractors>
 ```
 
 ## Citation
