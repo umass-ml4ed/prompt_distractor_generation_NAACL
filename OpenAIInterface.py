@@ -39,7 +39,7 @@ class OpenAIInterface:
             openai.api_type = "azure"
             OpenAIInterface.azure_client = AzureOpenAI(
                 api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-                api_version="2024-02-01",
+                api_version="2024-09-01-preview",
                 azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
             )
         return OpenAIInterface.azure_client
@@ -122,7 +122,7 @@ class OpenAIInterface:
             assert len(prompt) == 1, "Chat only supports one prompt"
             client = OpenAIInterface.get_client(openaicfg)
             if openaicfg.model.startswith("o1"):
-                params = {"timeout": 120}
+                params = {}
             else:
                 params = {"max_tokens": openaicfg.max_tokens, "temperature": openaicfg.temperature, "timeout": 45}
             response = client.chat.completions.create(
