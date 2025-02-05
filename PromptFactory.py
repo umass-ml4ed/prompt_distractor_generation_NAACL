@@ -38,10 +38,14 @@ class PromptFactory():
             return cls._disAllInfoFeedPrompt(questionData, examples, num_distractors)
         elif promptType == "distractor_all_info_with_errors":
             return cls._disAllInfoErrorPrompt(questionData, examples, num_distractors)
+        elif promptType == "distractor_all_info_with_reasoning":
+            return cls._disAllInfoReasoningPrompt(questionData, examples, num_distractors)
         elif promptType == "zero_shot":
             return cls._zeroShotPrompt(questionData, examples)
         elif promptType == "zero_shot_all_info_error":
             return cls._zeroShotAllInfoErrorPrompt(questionData, num_distractors)
+        elif promptType == "zero_shot_all_info_reasoning":
+            return cls._zeroShotAllInfoReasoningPrompt(questionData, num_distractors)
         elif promptType == "rule_based_random":
             return cls.rule_based_random_prompt(questionData, examples)
         elif promptType == "rule_based_selection":
@@ -189,6 +193,29 @@ class PromptFactory():
         return prompt
 
     @classmethod
+    def _disAllInfoReasoningPrompt(cls, questionData, examples, num_distractors):
+        instructions = "You will be given a math question along with the correct answer and explanation. " +\
+            "You will be also provided with several example questions that include incorrect distractor answers. " +\
+            f"Please generate {num_distractors} incorrect distractor answers for the current question to be used as " +\
+            "multiple-choice options in a multiple-choice exam. For each distractor, first generate a list of flawed reasoning " +\
+            "steps that the student would take to reach that distractor. " +\
+            "The reasoning steps for each distractor should be atomic and separated by periods." +\
+            "\n[Template]\n" +\
+            "Distractor1 Reasoning Steps:\n" +\
+            "Distractor1:\n" +\
+            "...\n" +\
+            f"Distractor{num_distractors} Reasoning Steps:\n" +\
+            f"Distractor{num_distractors}:\n"
+        examples_text = "[Examples]\n"
+        for _, row in examples.iterrows():
+            distractors_text_list = [f"Distractor{i+1}: {x['option']}\n" for i, x in enumerate(row["distractors"])]
+            distractor_text = ''.join(distractors_text_list)
+            examples_text += get_question_full_info(row) + "\n" + distractor_text + "\n"
+        prompt = instructions + "\n" + examples_text + "\n[Current Question]\n" + get_question_full_info(questionData)
+
+        return prompt
+
+    @classmethod
     def _zeroShotPrompt(cls, questionData, examples):
         """
         === EXAMPLE ===
@@ -221,6 +248,23 @@ class PromptFactory():
             "Distractor1:\n" +\
             "...\n" +\
             f"Distractor{num_distractors} Error:\n" +\
+            f"Distractor{num_distractors}:\n"
+        prompt = instructions + "\n" + get_question_full_info(questionData)
+        return prompt
+
+    @classmethod
+    def _zeroShotAllInfoReasoningPrompt(cls, questionData, num_distractors):
+        instructions = "You are given the following math question along with the correct answer and explanation. " +\
+            f"Please use the following template to give {num_distractors} alternative incorrect answers to be used as " +\
+            "multiple-choice options in a multiple-choice exam. " +\
+            "For each distractor, first generate a list of flawed reasoning " +\
+            "steps that the student would take to reach that distractor. " +\
+            "The reasoning steps for each distractor should be atomic and separated by periods." +\
+            "\n[Template]\n" +\
+            "Distractor1 Reasoning Steps:\n" +\
+            "Distractor1:\n" +\
+            "...\n" +\
+            f"Distractor{num_distractors} Reasoning Steps:\n" +\
             f"Distractor{num_distractors}:\n"
         prompt = instructions + "\n" + get_question_full_info(questionData)
         return prompt

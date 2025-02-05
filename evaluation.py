@@ -15,7 +15,7 @@ def main():
     gt_distractors = []
     generated_distractors = []
     proportions = []
-    distractor_nl_pattern = re.compile(r"(?i)(distractor ?(?:\d+):\**)\n")
+    distractor_nl_pattern = re.compile(r"(?i)(distractor ?(?:\d+):\**)\s*\n")
     distractor_pattern = re.compile(r"(?i)\**distractor ?(?:\d+):\** (.+)")
 
     data = pd.read_csv(args.filename)
@@ -42,9 +42,16 @@ def main():
         gt_distractors.append([clean_string(row["distractors"][0]['option']), clean_string(row["distractors"][1]['option']), clean_string(row["distractors"][2]['option'])])
         proportions.append({clean_string(row["distractors"][0]['option']) : row["distractors"][0]['proportion'], clean_string(row["distractors"][1]['option']) : row["distractors"][1]['proportion'], clean_string(row["distractors"][2]['option']) : row["distractors"][2]['proportion']})
 
-    print("Relaxed metric: ", relaxed_metric(gt_distractors, generated_distractors))
-    print("Hard metric: ", hard_metric(gt_distractors, generated_distractors))
-    print("Proportional metric: ", proportional_metric(gt_distractors, generated_distractors))
+    generated_distractors_at_3 = [gd[:3] for gd in generated_distractors]
+    print("@3")
+    print("Relaxed metric: ", relaxed_metric(gt_distractors, generated_distractors_at_3))
+    print("Hard metric: ", hard_metric(gt_distractors, generated_distractors_at_3))
+    print("Proportional metric: ", proportional_metric(gt_distractors, generated_distractors_at_3))
+    if args.num_distractors > 3:
+        print(f"@{args.num_distractors}")
+        print("Relaxed metric: ", relaxed_metric(gt_distractors, generated_distractors))
+        print("Hard metric: ", hard_metric(gt_distractors, generated_distractors))
+        print("Proportional metric: ", proportional_metric(gt_distractors, generated_distractors))
 
 if __name__ == "__main__":
     main()
