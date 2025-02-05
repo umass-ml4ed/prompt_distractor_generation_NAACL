@@ -12,6 +12,28 @@ For any questions please [email](mailto:wanyongfeng@umass.edu) or raise an issue
 ### Conda
 `conda env create --file enviornment.yml`
 
+## Data Format
+
+The data we use in these experiments is private. However, if you have your own data you want to test on, you can format it as follows in .csv files:
+
+- `id`: the unique question ID
+- `question`: the question text
+- `correct_option`: a JSON object containing:
+  - `option`: the correct option text
+  - `explanation`: the textual solution for the question
+- `construct_info`: a JSON object containing:
+  - `construct1`: a list for the top-level construct: `[construct ID: int, construct description: str]`
+  - `construct2`: a list for the mid-level construct: `[construct ID: int, construct description: str]`
+  - `construct3`: a list for the low-level construct: `[construct ID: int, construct description: str]`
+- `distractors`: a JSON list of 3 objects (one for each distractor), each containing:
+  - `option_idx`: the index of the option in the question (1-4)
+  - `option`: the distractor option text
+  - `explanation`: the feedback/explanation text for the distractor
+  - `proportion`: the percentage of students that chose this option (set to 0 if unknown)
+  - `misconception`: the text for the misconception for this distractor (optional, only needed for misconception-based ICL prompts or rule-based method)
+
+You can specify the train and test file paths using the `data.trainFilepath` and `data.testFilepath` command line arguments.
+
 ## Run
 
 ### Generate Distractors with kNN approach
